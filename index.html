@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Speaker Timer</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="timer-app" aria-label="Speaker Timer">
+      <header class="topbar">
+        <div class="brand">
+          <button class="icon-button menu-button" type="button" title="Timer menu" aria-label="Timer menu">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+          </button>
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6l4 2"></path></svg>
+          </span>
+          <h1>Speaker Timer</h1>
+        </div>
+        <div class="session-meta">
+          <div class="presentation-controls" aria-label="Presentation controls">
+            <input id="sessionNameInput" type="text" maxlength="40" value="Presentation" aria-label="Presentation name" hidden>
+            <select id="presentationSelect" aria-label="Active presentation" hidden></select>
+            <button class="presentation-menu-trigger" id="presentationMenuButton" type="button" aria-haspopup="true" aria-expanded="false">
+              <span>Presentation</span>
+              <strong id="activePresentationName">Presentation</strong>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+            </button>
+            <div class="presentation-popover" id="presentationMenu" hidden>
+              <div class="presentation-popover-actions" aria-label="Presentation actions">
+                <button class="icon-button" id="newPresentationButton" type="button" title="New presentation" aria-label="New presentation">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                </button>
+                <button class="icon-button" id="duplicatePresentationButton" type="button" title="Duplicate presentation" aria-label="Duplicate presentation">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+                <button class="icon-button" id="renamePresentationButton" type="button" title="Rename presentation" aria-label="Rename presentation">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                </button>
+                <button class="icon-button danger-icon" id="deletePresentationButton" type="button" title="Delete presentation" aria-label="Delete presentation">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path><path d="M10 11v5M14 11v5"></path></svg>
+                </button>
+                <button class="icon-button" id="menuImportPresentationButton" type="button" title="Import presentations" aria-label="Import presentations">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+                </button>
+                <button class="icon-button" id="menuExportActivePresentationButton" type="button" title="Export active presentation" aria-label="Export active presentation">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9"></path><path d="m7 14 5-5 5 5"></path><path d="M5 3h14"></path></svg>
+                </button>
+                <button class="icon-button" id="menuExportPresentationButton" type="button" title="Export all presentations" aria-label="Export all presentations">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path></svg>
+                </button>
+                <button class="icon-button" id="openPresentationManagerButton" type="button" title="Presentation Manager" aria-label="Open Presentation Manager">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"></path><path d="M8 5v14"></path></svg>
+                </button>
+              </div>
+              <div class="presentation-popover-list" id="menuPresentationRows" aria-label="Saved presentations"></div>
+            </div>
+          </div>
+          <div class="mode-toggle" role="tablist" aria-label="Timer mode">
+            <button id="timerModeButton" type="button" role="tab" aria-selected="true" title="Timer" aria-label="Timer">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+              <span class="sr-only">Timer</span>
+            </button>
+            <button id="rehearsalModeButton" type="button" role="tab" aria-selected="false" title="Rehearsal" aria-label="Rehearsal">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10"></path><path d="M8 21h8"></path><path d="M12 17v4"></path><rect x="8" y="3" width="8" height="12" rx="4"></rect></svg>
+              <span class="sr-only">Rehearsal</span>
+            </button>
+          </div>
+          <span>Status: <strong id="statusLabel">Not Running</strong></span>
+        </div>
+        <button class="ghost-button fullscreen-button" id="fullscreenButton" type="button" title="Fullscreen" aria-label="Fullscreen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M21 16v3a2 2 0 0 1-2 2h-3"></path></svg>
+        </button>
+      </header>
+
+      <section class="workspace">
+        <aside class="side-panel left-panel" aria-label="Timer setup">
+          <section class="panel-section">
+            <div class="section-title-row">
+              <h2>
+                <span class="timer-copy">Current Segment</span>
+                <span class="rehearsal-copy">Sections</span>
+              </h2>
+              <div class="section-title-actions">
+                <span class="rehearsal-copy section-hint">Drag to reorder</span>
+                <button class="primary-button icon-command" id="addSegmentButton" type="button" title="Add segment" aria-label="Add segment">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                </button>
+                <button class="secondary-button icon-command" id="editSegmentButton" type="button" title="Edit segment" aria-label="Edit segment">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                </button>
+              </div>
+            </div>
+            <div class="preset-list" id="segmentList" role="listbox" aria-label="Segment presets"></div>
+          </section>
+        </aside>
+
+        <section class="timer-stage" aria-label="Countdown">
+          <div class="rehearsal-stage-title">
+            <span>Current Section</span>
+            <strong id="rehearsalStageName">No run active</strong>
+          </div>
+          <div class="timer-ring" id="timerRing">
+            <svg class="progress-ring" viewBox="0 0 320 320" aria-hidden="true">
+              <circle class="progress-track" cx="160" cy="160" r="144"></circle>
+              <circle class="progress-value" id="progressCircle" cx="160" cy="160" r="144"></circle>
+            </svg>
+            <div class="timer-content">
+              <svg class="timer-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+              <div class="time-display" id="timeDisplay" aria-live="polite">12:00</div>
+              <div class="target-copy">Target Time</div>
+              <div class="target-time" id="targetTime">12:00</div>
+            </div>
+          </div>
+          <div class="stage-actions">
+            <button class="stage-button" id="minusMinuteButton" type="button" title="Subtract one minute" aria-label="Subtract one minute">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12h8"></path></svg>
+            </button>
+            <button class="stage-button start" id="startPauseButton" type="button" title="Start" aria-label="Start">
+              <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"></path></svg>
+              <span class="sr-only">Start</span>
+            </button>
+            <button class="stage-button" id="resetButton" type="button" title="Reset timer" aria-label="Reset timer">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 3v6h6"></path></svg>
+            </button>
+            <button class="stage-button" id="plusMinuteButton" type="button" title="Add one minute" aria-label="Add one minute">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
+            </button>
+          </div>
+          <section class="rehearsal-panel" aria-label="Rehearsal timing">
+            <div class="rehearsal-head">
+              <div>
+                <h2>Rehearsal</h2>
+                <p id="rehearsalCurrentSegment">No run active</p>
+              </div>
+              <strong id="rehearsalStatus">Idle</strong>
+            </div>
+            <div class="rehearsal-actions">
+              <button class="primary-button icon-command" id="startRehearsalButton" type="button" title="Start rehearsal" aria-label="Start rehearsal">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"></path></svg>
+                <span class="sr-only">Start rehearsal</span>
+              </button>
+              <button class="secondary-button icon-command" id="nextSectionButton" type="button" title="Next section" aria-label="Next section">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16"></path><path d="m10 6 8 6-8 6z"></path></svg>
+              </button>
+              <button class="secondary-button icon-command" id="endRunButton" type="button" title="End run" aria-label="End run">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
+              </button>
+              <button class="danger-button icon-command" id="resetRunButton" type="button" title="Reset run" aria-label="Reset run">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 3v6h6"></path></svg>
+              </button>
+            </div>
+            <div class="rehearsal-result-link">
+              <span id="rehearsalLatest">No sections recorded.</span>
+            </div>
+          </section>
+        </section>
+
+        <aside class="side-panel right-panel" aria-label="Alerts and notes">
+          <section class="panel-section alert-section">
+            <div class="alert-title-row">
+              <h2 class="amber-title">Alerts &amp; Sounds</h2>
+              <button class="secondary-button settings-button icon-command" id="openAlertSettingsButton" type="button" title="Alerts and sound settings" aria-label="Alerts and sound settings">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.37a1.7 1.7 0 0 0-1 .57 1.7 1.7 0 0 0-.43 1.06V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-.57-1A1.7 1.7 0 0 0 3 13.57H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1-.57A1.7 1.7 0 0 0 10.43 3V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9c.14.35.34.67.57 1 .28.28.66.43 1.06.43H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.97Z"></path></svg>
+              </button>
+            </div>
+            <div class="alert-summary">
+              <div class="alert-summary-row warning">
+                <span>Warning</span>
+                <strong id="warningSummary">02:00</strong>
+              </div>
+              <div class="alert-summary-row final">
+                <span>Final</span>
+                <strong id="finalSummary">01:00</strong>
+              </div>
+              <div class="alert-summary-row">
+                <span>Sound</span>
+                <strong id="soundSummary">Chime On</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-section rehearsal-side-section">
+            <h2>Live Summary</h2>
+            <div class="rehearsal-stats" aria-label="Current rehearsal summary">
+              <div>
+                <span>Total Elapsed</span>
+                <strong id="rehearsalTotalElapsed">00:00</strong>
+              </div>
+              <div>
+                <span>Planned Total</span>
+                <strong id="rehearsalPlannedTotal">00:00</strong>
+              </div>
+              <div>
+                <span>Under / Over</span>
+                <strong id="rehearsalVariance">00:00</strong>
+              </div>
+            </div>
+
+            <div class="rehearsal-results" aria-label="Current run results">
+              <h2>Results</h2>
+              <div class="rehearsal-table-wrap">
+                <table class="rehearsal-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Section</th>
+                      <th scope="col">Plan</th>
+                      <th scope="col">Actual</th>
+                      <th scope="col">+/-</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rehearsalResults">
+                    <tr class="empty-row">
+                      <td colspan="4">No sections recorded.</td>
+                    </tr>
+                  </tbody>
+                  <tfoot id="rehearsalTotals">
+                    <tr>
+                      <th scope="row">Total</th>
+                      <td>00:00</td>
+                      <td>00:00</td>
+                      <td>00:00</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-section notes-section">
+            <div class="notes-title-row">
+              <h2>Speaker Notes</h2>
+              <strong id="notesSegmentName">Custom</strong>
+            </div>
+            <textarea id="notesInput" maxlength="1000" placeholder="Add your notes here..." spellcheck="true"></textarea>
+            <div class="notes-count"><span id="notesCount">0</span> / 1000</div>
+          </section>
+        </aside>
+      </section>
+
+      <footer class="progress-footer" aria-label="Timing progress">
+        <div class="time-stat">
+          <span>Elapsed</span>
+          <strong id="elapsedTime">00:00</strong>
+          <em id="elapsedPercent">0%</em>
+        </div>
+        <div class="progress-area">
+          <div class="markers">
+            <span id="warningMarker" class="marker warning" tabindex="0" data-label="02:00" aria-label="Warning at 02:00"><span class="marker-label">02:00</span></span>
+            <span id="finalMarker" class="marker final" tabindex="0" data-label="01:00" aria-label="Final minute at 01:00"><span class="marker-label">01:00</span></span>
+          </div>
+          <div class="linear-track">
+            <div class="tick-rail" id="tickRail" aria-hidden="true"></div>
+            <div class="linear-value" id="linearValue"></div>
+          </div>
+          <div class="scale" aria-hidden="true">
+            <span>0%</span>
+            <span>50%</span>
+            <span>100%</span>
+          </div>
+        </div>
+        <div class="time-stat remaining">
+          <span>Remaining</span>
+          <strong id="remainingTime">12:00</strong>
+          <em id="remainingPercent">100%</em>
+        </div>
+      </footer>
+    </main>
+
+    <section class="segment-view" id="segmentView" aria-hidden="true">
+      <div class="segment-view-panel" role="dialog" aria-modal="true" aria-labelledby="segmentViewTitle">
+        <header class="segment-view-header">
+          <div>
+            <span>Segment</span>
+            <h2 id="segmentViewTitle">Edit Segment</h2>
+          </div>
+          <button class="icon-button" id="closeSegmentViewButton" type="button" aria-label="Close segment editor">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+          </button>
+        </header>
+
+        <div class="segment-form">
+          <label class="segment-name-field" for="segmentNameInput">
+            <span>Segment Name</span>
+            <input id="segmentNameInput" type="text" maxlength="32" value="Custom">
+          </label>
+          <div class="duration-grid" aria-label="Segment duration">
+            <label>
+              <input id="hoursInput" inputmode="numeric" type="number" min="0" max="9" value="0">
+              <span>Hours</span>
+            </label>
+            <label>
+              <input id="minutesInput" inputmode="numeric" type="number" min="0" max="99" value="12">
+              <span>Minutes</span>
+            </label>
+            <label>
+              <input id="secondsInput" inputmode="numeric" type="number" min="0" max="59" value="0">
+              <span>Seconds</span>
+            </label>
+          </div>
+        </div>
+
+        <footer class="segment-view-actions">
+          <button class="danger-button icon-command" id="deleteSegmentButton" type="button" title="Delete segment" aria-label="Delete segment">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg>
+          </button>
+          <button class="secondary-button icon-command" id="cancelSegmentButton" type="button" title="Cancel" aria-label="Cancel">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+          </button>
+          <button class="secondary-button icon-command" id="setCustomButton" type="button" title="Set timer" aria-label="Set timer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+          </button>
+          <button class="primary-button icon-command" id="saveSegmentButton" type="button" title="Save segment" aria-label="Save segment">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+          </button>
+        </footer>
+      </div>
+    </section>
+
+    <section class="segment-view" id="alertSettingsView" aria-hidden="true">
+      <div class="segment-view-panel alert-settings-panel" role="dialog" aria-modal="true" aria-labelledby="alertSettingsTitle">
+        <header class="segment-view-header">
+          <div>
+            <span>Timer</span>
+            <h2 id="alertSettingsTitle">Alerts &amp; Sounds</h2>
+          </div>
+          <button class="icon-button" id="closeAlertSettingsButton" type="button" aria-label="Close alert settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+          </button>
+        </header>
+
+        <div class="segment-form">
+          <div class="alert-control warning">
+            <label for="warningInput">Warning</label>
+            <div class="input-action">
+              <input id="warningInput" inputmode="numeric" type="number" min="0" max="99" value="2" aria-label="Warning minutes">
+              <span>min</span>
+              <button class="alert-button warning" id="testWarningButton" type="button" title="Test warning alert" aria-label="Test warning alert">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.27 21a2 2 0 0 0 3.46 0"></path><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path></svg>
+              </button>
+              <button class="alert-button sound active" id="toggleWarningSoundButton" type="button" title="Toggle warning sound" aria-label="Toggle warning sound">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+              </button>
+            </div>
+          </div>
+          <div class="alert-control final">
+            <label for="finalInput">Final Minute</label>
+            <div class="input-action">
+              <input id="finalInput" inputmode="numeric" type="number" min="0" max="99" value="1" aria-label="Final minute threshold">
+              <span>min</span>
+              <button class="alert-button final" id="testFinalButton" type="button" title="Test final minute alert" aria-label="Test final minute alert">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.27 21a2 2 0 0 0 3.46 0"></path><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path></svg>
+              </button>
+              <button class="alert-button sound active" id="toggleFinalSoundButton" type="button" title="Toggle final minute sound" aria-label="Toggle final minute sound">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+              </button>
+            </div>
+          </div>
+          <div class="sound-settings">
+            <label class="switch-row" for="soundCueToggle">
+              <span>Sound Cue</span>
+              <input id="soundCueToggle" type="checkbox" checked>
+            </label>
+            <label class="select-label" for="soundSelect">
+              <span>Current Segment</span>
+              <select id="soundSelect">
+                <option value="chime">Chime</option>
+                <option value="double">Double</option>
+                <option value="pulse">Pulse</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <footer class="segment-view-actions alert-settings-actions">
+          <button class="primary-button icon-command" id="doneAlertSettingsButton" type="button" title="Done" aria-label="Done">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+          </button>
+        </footer>
+      </div>
+    </section>
+
+    <section class="segment-view" id="presentationManagerView" aria-hidden="true">
+      <div class="segment-view-panel presentation-manager-panel" role="dialog" aria-modal="true" aria-labelledby="presentationManagerTitle">
+        <header class="segment-view-header">
+          <div>
+            <span>Presentation</span>
+            <h2 id="presentationManagerTitle">Presentation Manager</h2>
+          </div>
+          <button class="icon-button" id="closePresentationManagerButton" type="button" aria-label="Close Presentation Manager">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+          </button>
+        </header>
+
+        <div class="presentation-manager-body">
+          <div class="presentation-manager-toolbar">
+            <div class="presentation-manager-group">
+              <button class="primary-button icon-command" id="managerNewPresentationButton" type="button" title="New presentation" aria-label="New presentation">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+              </button>
+              <button class="secondary-button icon-command" id="managerDuplicatePresentationButton" type="button" title="Duplicate presentation" aria-label="Duplicate presentation">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+              <button class="secondary-button icon-command" id="managerRenamePresentationButton" type="button" title="Rename presentation" aria-label="Rename presentation">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+              </button>
+              <button class="danger-button icon-command" id="managerDeletePresentationButton" type="button" title="Delete presentation" aria-label="Delete presentation">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg>
+              </button>
+            </div>
+            <div class="presentation-manager-group">
+              <input id="presentationImportInput" type="file" accept="application/json,.json" hidden>
+              <button class="secondary-button icon-command" id="importPresentationButton" type="button" title="Import presentations" aria-label="Import presentations">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+              </button>
+              <button class="secondary-button icon-command" id="exportActivePresentationButton" type="button" title="Export active presentation" aria-label="Export active presentation">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9"></path><path d="m7 14 5-5 5 5"></path><path d="M5 3h14"></path></svg>
+              </button>
+              <button class="secondary-button icon-command" id="exportPresentationButton" type="button" title="Export all presentations" aria-label="Export all presentations">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9"></path><path d="m7 14 5-5 5 5"></path><path d="M5 3h14"></path></svg>
+              </button>
+            </div>
+          </div>
+          <p class="presentation-error" id="presentationError" role="status" aria-live="polite"></p>
+          <div class="presentation-table" aria-label="Saved presentations">
+            <div class="presentation-table-head">
+              <span>Presentation</span>
+              <span>Duration</span>
+              <span>Sections</span>
+              <span>Last updated</span>
+            </div>
+            <div class="presentation-table-body" id="presentationRows"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script src="app.js"></script>
+  </body>
+</html>
